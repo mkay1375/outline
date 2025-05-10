@@ -50,6 +50,10 @@ if (env.CDN_URL) {
   defaultSrc.push(env.CDN_URL);
 }
 
+if (env.CHAINLIT_COPILOT_URL) {
+  scriptSrc.push(env.CHAINLIT_COPILOT_URL);
+}
+
 export default function init(app: Koa = new Koa(), server?: Server) {
   void initI18n();
 

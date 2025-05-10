@@ -649,6 +649,27 @@ export class Environment {
   @Public
   public APP_NAME = "Outline";
 
+  @IsOptional()
+  @IsUrl({ require_tld: false })
+  public CHAINLIT_COPILOT_URL = this.toOptionalString(
+    environment.CHAINLIT_COPILOT_URL
+  );
+
+  @IsOptional()
+  public CHAINLIT_COPILOT_SCRIPT_PATH = this.toOptionalString(
+    environment.CHAINLIT_COPILOT_SCRIPT_PATH ?? "/copilot/index.js"
+  );
+
+  @IsOptional()
+  public CHAINLIT_COPILOT_ENABLER_SCRIPT_PATH = this.toOptionalString(
+    environment.CHAINLIT_COPILOT_ENABLER_SCRIPT_PATH
+  );
+
+  @IsOptional()
+  public CHAINLIT_JWT_SECRET = this.toOptionalString(
+    environment.CHAINLIT_JWT_SECRET
+  );
+
   /**
    * Returns true if the current installation is the cloud hosted version at
    * getoutline.com

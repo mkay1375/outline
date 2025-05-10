@@ -11,6 +11,7 @@ import documentLoader from "@server/commands/documentLoader";
 import env from "@server/env";
 import { Integration } from "@server/models";
 import presentEnv from "@server/presenters/env";
+import createChainlitCopilotJwt from "@server/utils/chainlit";
 import { getTeamFromContext } from "@server/utils/passport";
 import prefetchTags from "@server/utils/prefetchTags";
 import readManifestFile from "@server/utils/readManifestFile";
@@ -97,11 +98,13 @@ export const renderApp = async (
     ? ""
     : '<meta name="robots" content="noindex, nofollow">';
 
-  const scriptTags = env.isProduction
-    ? `<script type="module" nonce="${ctx.state.cspNonce}" src="${
-        env.CDN_URL || ""
-      }/static/${readManifestFile()[entry]["file"]}"></script>`
-    : `<script type="module" nonce="${ctx.state.cspNonce}">
+  let scriptTags = "";
+  if (env.isProduction) {
+    scriptTags += `<script type="module" nonce="${ctx.state.cspNonce}" src="${
+      env.CDN_URL || ""
+    }/static/${readManifestFile()[entry]["file"]}"></script>`;
+  } else {
+    scriptTags += `<script type="module" nonce="${ctx.state.cspNonce}">
         import RefreshRuntime from "${viteHost}/static/@react-refresh"
         RefreshRuntime.injectIntoGlobalHook(window)
         window.$RefreshReg$ = () => { }
@@ -111,6 +114,16 @@ export const renderApp = async (
       <script type="module" nonce="${ctx.state.cspNonce}" src="${viteHost}/static/@vite/client"></script>
       <script type="module" nonce="${ctx.state.cspNonce}" src="${viteHost}/static/${entry}"></script>
     `;
+  }
+  if (env.CHAINLIT_COPILOT_URL) {
+    const chainlitCopilotJwt = await createChainlitCopilotJwt(
+      ctx.cookies,
+      env.CHAINLIT_JWT_SECRET
+    );
+    scriptTags += `<script nonce="${ctx.state.cspNonce}">const chainlitCopilotJwt = "${chainlitCopilotJwt}";</script>`;
+    scriptTags += `<script nonce="${ctx.state.cspNonce}" src="${env.CHAINLIT_COPILOT_URL}${env.CHAINLIT_COPILOT_SCRIPT_PATH}"></script>`;
+    scriptTags += `<script nonce="${ctx.state.cspNonce}" src="${env.CHAINLIT_COPILOT_URL}${env.CHAINLIT_COPILOT_ENABLER_SCRIPT_PATH}"></script>`;
+  }
 
   // Ensure no caching is performed
   ctx.response.set("Cache-Control", "no-cache, must-revalidate");
