@@ -651,23 +651,43 @@ export class Environment {
 
   @IsOptional()
   @IsUrl({ require_tld: false })
-  public CHAINLIT_COPILOT_URL = this.toOptionalString(
-    environment.CHAINLIT_COPILOT_URL
+  public CUSTOM_SCRIPT_BASE_URL = this.toOptionalString(
+    environment.CUSTOM_SCRIPT_BASE_URL
   );
 
   @IsOptional()
-  public CHAINLIT_COPILOT_SCRIPT_PATH = this.toOptionalString(
-    environment.CHAINLIT_COPILOT_SCRIPT_PATH ?? "/copilot/index.js"
+  public CUSTOM_SCRIPT_PATHS = this.toOptionalCommaList(
+    environment.CUSTOM_SCRIPT_PATHS
   );
 
   @IsOptional()
-  public CHAINLIT_COPILOT_ENABLER_SCRIPT_PATH = this.toOptionalString(
-    environment.CHAINLIT_COPILOT_ENABLER_SCRIPT_PATH
+  public CUSTOM_SCRIPT_JWT_SECRET = this.toOptionalString(
+    environment.CUSTOM_SCRIPT_JWT_SECRET
   );
 
   @IsOptional()
-  public CHAINLIT_JWT_SECRET = this.toOptionalString(
-    environment.CHAINLIT_JWT_SECRET
+  @IsIn([
+    "HS256",
+    "HS384",
+    "HS512",
+    "RS256",
+    "RS384",
+    "RS512",
+    "ES256",
+    "ES384",
+    "ES512",
+    "PS256",
+    "PS384",
+    "PS512",
+    "none",
+  ])
+  public CUSTOM_SCRIPT_JWT_ALGORITHM = this.toOptionalString(
+    environment.CUSTOM_SCRIPT_JWT_ALGORITHM
+  );
+
+  @IsOptional()
+  public CUSTOM_SCRIPT_JWT_EXPIRATION_SECONDS = this.toOptionalNumber(
+    environment.CUSTOM_SCRIPT_JWT_EXPIRATION_SECONDS
   );
 
   /**

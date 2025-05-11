@@ -1,23 +1,25 @@
 import * as Cookies from "cookies";
-import jwt from "jsonwebtoken";
+import jwt, { Algorithm } from "jsonwebtoken";
 import { getUserForJWT } from "@server/utils/jwt";
 
-export default async function createChainlitCopilotJwt(
+export default async function createCustomScriptJwt(
   cookies: Cookies,
-  chainlitJwtSecret: string | undefined
+  secret: string,
+  expireationSeconds: number,
+  algorithm: string
 ) {
   const accessToken = cookies.get("accessToken");
-  if (!accessToken || !chainlitJwtSecret) {
+  if (!accessToken || !secret) {
     return "";
   }
   try {
     const user = await getUserForJWT(accessToken);
     const toEncode = {
       identifier: user.email,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 1, // 1 day
+      exp: Math.floor(Date.now() / 1000) + expireationSeconds,
     };
-    return jwt.sign(toEncode, chainlitJwtSecret, {
-      algorithm: "HS256",
+    return jwt.sign(toEncode, secret, {
+      algorithm: algorithm as Algorithm,
     });
   } catch (e) {
     return "";

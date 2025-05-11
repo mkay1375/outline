@@ -11,7 +11,7 @@ import documentLoader from "@server/commands/documentLoader";
 import env from "@server/env";
 import { Integration } from "@server/models";
 import presentEnv from "@server/presenters/env";
-import createChainlitCopilotJwt from "@server/utils/chainlit";
+import createCustomScriptJwt from "@server/utils/CustomScript";
 import { getTeamFromContext } from "@server/utils/passport";
 import prefetchTags from "@server/utils/prefetchTags";
 import readManifestFile from "@server/utils/readManifestFile";
@@ -115,14 +115,23 @@ export const renderApp = async (
       <script type="module" nonce="${ctx.state.cspNonce}" src="${viteHost}/static/${entry}"></script>
     `;
   }
-  if (env.CHAINLIT_COPILOT_URL) {
-    const chainlitCopilotJwt = await createChainlitCopilotJwt(
-      ctx.cookies,
-      env.CHAINLIT_JWT_SECRET
-    );
-    scriptTags += `<script nonce="${ctx.state.cspNonce}">const chainlitCopilotJwt = "${chainlitCopilotJwt}";</script>`;
-    scriptTags += `<script nonce="${ctx.state.cspNonce}" src="${env.CHAINLIT_COPILOT_URL}${env.CHAINLIT_COPILOT_SCRIPT_PATH}"></script>`;
-    scriptTags += `<script nonce="${ctx.state.cspNonce}" src="${env.CHAINLIT_COPILOT_URL}${env.CHAINLIT_COPILOT_ENABLER_SCRIPT_PATH}"></script>`;
+  if (env.CUSTOM_SCRIPT_BASE_URL && env.CUSTOM_SCRIPT_PATHS) {
+    if (
+      env.CUSTOM_SCRIPT_JWT_SECRET &&
+      env.CUSTOM_SCRIPT_JWT_ALGORITHM &&
+      env.CUSTOM_SCRIPT_JWT_EXPIRATION_SECONDS
+    ) {
+      const customScriptJwt = await createCustomScriptJwt(
+        ctx.cookies,
+        env.CUSTOM_SCRIPT_JWT_SECRET,
+        env.CUSTOM_SCRIPT_JWT_EXPIRATION_SECONDS,
+        env.CUSTOM_SCRIPT_JWT_ALGORITHM
+      );
+      scriptTags += `<script nonce="${ctx.state.cspNonce}">const customScriptJwt = "${customScriptJwt}";</script>`;
+    }
+    for (const path of env.CUSTOM_SCRIPT_PATHS) {
+      scriptTags += `<script nonce="${ctx.state.cspNonce}" src="${env.CUSTOM_SCRIPT_BASE_URL}${path}"></script>`;
+    }
   }
 
   // Ensure no caching is performed
